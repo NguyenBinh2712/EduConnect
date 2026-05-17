@@ -1,16 +1,20 @@
 package com.example.DATN.entity;
 
+import com.example.DATN.entity.enums.FriendshipStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
@@ -28,18 +32,44 @@ public class User {
     boolean active;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_name")
-    )
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ActiveCode> activeCodes;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "profile_id", unique = true)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Profile profile;
+
+    @Builder.Default
+    private boolean isTeacher = false;
+
+    private LocalDateTime teacherVerifiedAt;
+
+    // friend
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Friendship> sentFriendships = new HashSet<>();
+
+    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Friendship> receivedFriendships = new HashSet<>();
+
+    @Transient
+    public Set<User> getFriends() {
+        Set<User> friends = new HashSet<>();
+
+        sentFriendships.stream()
+                .filter(f -> f.getStatus() == FriendshipStatus.ACCEPTED)
+                .map(Friendship::getFriend)
+                .forEach(friends::add);
+
+        receivedFriendships.stream()
+                .filter(f -> f.getStatus() == FriendshipStatus.ACCEPTED)
+                .map(Friendship::getUser)
+                .forEach(friends::add);
+
+        return friends;
+    }
+
 
 }

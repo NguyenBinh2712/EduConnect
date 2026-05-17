@@ -9,12 +9,13 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InvalidToken {
     @Id
-    Long id;
+    String id;
 
     @Column(nullable = false)
     Date exp;

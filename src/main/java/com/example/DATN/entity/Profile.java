@@ -10,7 +10,8 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
@@ -29,7 +30,8 @@ public class Profile {
     @Enumerated(EnumType.STRING)
     Gender gender;
 
-    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    User user;
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
 
 }
