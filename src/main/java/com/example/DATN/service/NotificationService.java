@@ -33,7 +33,17 @@ public class NotificationService {
             return;
 
         String actorName = userRepository.findById(actorId)
-                .map(u -> u.getProfile().getFullName())
+                .map(u -> {
+                    if (u.getProfile() == null) {
+                        return "Người dùng";
+                    }
+
+                    if (u.getProfile().getFullName() == null) {
+                        return "Người dùng";
+                    }
+
+                    return u.getProfile().getFullName();
+                })
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String content = switch (type) {

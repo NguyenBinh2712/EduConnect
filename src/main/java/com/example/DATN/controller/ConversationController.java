@@ -8,6 +8,9 @@ import com.example.DATN.service.ConversationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -176,4 +179,18 @@ public class ConversationController {
         response.setMessage("Report submitted");
         return response;
     }
+
+    @GetMapping("myConversation")
+    public ApiResponse<Slice<ConversationResponse>> getMyConversations(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Long userId = ((Number) jwt.getClaim("userId")).longValue();
+        Pageable pageable = PageRequest.of(page, size);
+        ApiResponse<Slice<ConversationResponse>> response = new ApiResponse<>();
+        response.setResult(conversationService.getMyConversations(userId,page,size));
+        return response;
+    }
+
 }

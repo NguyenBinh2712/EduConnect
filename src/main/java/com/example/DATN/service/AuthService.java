@@ -96,7 +96,7 @@ public class AuthService {
     }
 
     private String buildScope(User user){
-        StringJoiner stringJoiner=new StringJoiner("");
+        StringJoiner stringJoiner=new StringJoiner(" ");
         if(!CollectionUtils.isEmpty(user.getRoles())){
             user.getRoles().forEach(role -> {
                 stringJoiner.add(role.getName());

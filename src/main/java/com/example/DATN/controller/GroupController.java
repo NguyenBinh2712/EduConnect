@@ -397,4 +397,13 @@ public class GroupController {
         return response;
     }
 
+    @GetMapping
+    public ApiResponse getAllGroups() {
+
+        ApiResponse response = new ApiResponse();
+
+        response.setResult(groupService.getAlls());
+        return response;
+    }
+
 }

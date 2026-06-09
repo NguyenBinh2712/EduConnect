@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Answer {
-    String QuestionId;
+    String questionId;
     List<Integer> selectAnswer;
     String textAnswer;                   // tự luận
     boolean isCorrect;

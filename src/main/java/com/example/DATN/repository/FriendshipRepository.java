@@ -20,9 +20,17 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
     List<Friendship> findByFriendIdAndStatus(Long friendId, FriendshipStatus status);
     List<Friendship> findByUserIdAndStatus(Long userId, FriendshipStatus status);
 
-    @Query("SELECT f FROM Friendship f WHERE " +
-            "(f.user.id = :u1 AND f.friend.id = :u2) OR (f.user.id = :u2 AND f.friend.id = :u1)")
-    Optional<Friendship> findFriendshipBetween(@Param("u1") Long u1, @Param("u2") Long u2);
+    @Query("""
+    SELECT f FROM Friendship f
+    WHERE
+    (f.user.id = :u1 AND f.friend.id = :u2)
+    OR
+    (f.user.id = :u2 AND f.friend.id = :u1)
+""")
+    List<Friendship> findFriendshipBetween(
+            @Param("u1") Long u1,
+            @Param("u2") Long u2);
+
     @Query("""
     SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END
     FROM Friendship f

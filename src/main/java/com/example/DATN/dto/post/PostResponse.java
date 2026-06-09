@@ -21,7 +21,7 @@ public class PostResponse {
 
     private Long id;
 
-    private Long userId;
+    private UserPost user;
 
     private String content;
 

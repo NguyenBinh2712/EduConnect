@@ -21,6 +21,9 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -84,8 +87,9 @@ public class UserService {
 
     }
 
-    public void createOrUpdateProfile(ProfileRequest request){
-        User user=getCurrentUser();
+    public void createOrUpdateProfile(Long userId,ProfileRequest request){
+        User user=userRepository.findById(userId)
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
         Profile profile=user.getProfile();
         if(profile==null){
              profile=new Profile();
@@ -232,8 +236,9 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public List<UserResponse> getAllUser() {
-        return userRepository.findAll().stream()
+    public List<UserResponse> getAllUser(int page, int size ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findAll(pageable).stream()
                 .map(this::toUserResponse)
                 .toList();
     }
@@ -281,6 +286,12 @@ public class UserService {
                 .avatarUrl(profile.getAvatarUrl())
                 .avatarPublicId(profile.getAvatarPublicId())
                 .build();
+    }
+    public Slice<UserResponse> searchUsers(String keyword, int page, int size) {
+        return userRepository
+                .findByProfileFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                        keyword, keyword, PageRequest.of(page, size))
+                .map(this::toUserResponse);
     }
 
 }

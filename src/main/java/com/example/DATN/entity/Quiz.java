@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Quiz {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -33,21 +34,22 @@ public class Quiz {
     QuizStatus status;
 
     Long time;
+
     @Builder.Default
-    Integer maxAttempt=3;
+    Integer maxAttempt = 3;
 
     @Column(columnDefinition = "TEXT")
     String note;
 
-   LocalDateTime startAt;
-   LocalDateTime endAt;
+    LocalDateTime startAt;
+    LocalDateTime endAt;
     LocalDateTime createAt;
 
-   String contentQuizId;
-   boolean allowAiReview;
+    String contentQuizId;
+    boolean allowAiReview;
 
     @PrePersist
-    void onCreate(){
-        createAt=LocalDateTime.now();
+    void onCreate() {
+        createAt = LocalDateTime.now();
     }
 }

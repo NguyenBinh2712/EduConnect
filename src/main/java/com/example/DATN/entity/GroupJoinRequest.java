@@ -34,6 +34,7 @@ public class GroupJoinRequest {
     User inviter;  // nếu được mời
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     JoinRequestStatus status = JoinRequestStatus.PENDING;
 
     LocalDateTime requestedAt = LocalDateTime.now();

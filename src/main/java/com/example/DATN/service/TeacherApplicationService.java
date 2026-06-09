@@ -139,17 +139,22 @@ public class TeacherApplicationService {
 
         if (newStatus == ApplicationStatus.APPROVED) {
             User user = app.getApplicant();
-            var roles=user.getRoles();
-            roles.add(Role.builder().name("TEACHER").build());
+
+
+            Role teacherRole = roleRepository.findByName("TEACHER")
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+
+            user.getRoles().add(teacherRole);
+            user.getRoles().remove(roleRepository.findByName("STUDENT"));
             user.setTeacher(true);
             user.setTeacherVerifiedAt(LocalDateTime.now());
+
             userRepository.save(user);
         }
 
         app = applicationRepository.save(app);
         return mapToResponse(app);
     }
-
     @PreAuthorize("hasRole('ADMIN')")
     public List<TeacherResponse> getPending() {
         return applicationRepository.findByStatusOrderByAppliedAtDesc(ApplicationStatus.PENDING)

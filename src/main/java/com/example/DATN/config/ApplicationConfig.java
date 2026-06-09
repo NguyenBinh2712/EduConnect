@@ -37,7 +37,7 @@ public class ApplicationConfig {
                 roles.add(role);
                 User user= new User();
                 user.setEmail("admin@gmail.com");
-                user.setPassword(passwordEncoder.encode("admin"));
+                user.setPassword(passwordEncoder.encode("admin123"));
                 user.setActive(true);
                 user.setRoles(roles);
                 userRepository.save(user);

@@ -21,7 +21,10 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    User user;
 
     @Column(columnDefinition = "TEXT")
     String content;

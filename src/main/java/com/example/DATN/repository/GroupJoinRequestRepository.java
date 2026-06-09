@@ -10,6 +10,8 @@ import java.util.Optional;
 @Repository
 public interface GroupJoinRequestRepository extends JpaRepository<GroupJoinRequest,Long> {
     List<GroupJoinRequest> findByGroupIdAndStatus(Long groupId, JoinRequestStatus status);
+
+    List<GroupJoinRequest> findByUserIdAndStatus(Long userId, JoinRequestStatus status);
     Optional<GroupJoinRequest> findByGroupIdAndUserId(Long groupId, Long userId);
     void deleteByGroupId(Long groupId);
 

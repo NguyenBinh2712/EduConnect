@@ -11,8 +11,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TeacherFeedbackRequest {
     Long attemptId;
-
-    Integer questionIndex; // null = góp ý tổng thể
-
+    String questionId; // null = góp ý tổng thể
     String content;
 }

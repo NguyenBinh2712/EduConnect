@@ -206,7 +206,6 @@ public class PostController {
     }
 
     //Admin lấy danh sách report đang chờ xử lý
-
     @GetMapping("/reports/pending")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse getPendingReports() {
@@ -215,6 +214,64 @@ public class PostController {
 
         ApiResponse response = new ApiResponse();
         response.setResult(reports);
+        return response;
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse getAllPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+
+        ApiResponse response = new ApiResponse();
+
+        response.setResult(
+                postService.getAdminPosts(page, size)
+        );
+
+        return response;
+    }
+
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse deleteComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Long userId = ((Number) jwt.getClaim("userId")).longValue();
+        postService.deleteComment(userId, commentId);
+
+        ApiResponse response = new ApiResponse();
+        response.setMessage("Xóa bình luận thành công");
+        return response;
+    }
+
+    @GetMapping("/user/{userId}")
+    public ApiResponse getUserPosts(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Long viewerId = jwt != null ? ((Number) jwt.getClaim("userId")).longValue() : null;
+
+        Slice<PostResponse> posts = postService.getUserPosts(userId, viewerId, page, size);
+
+        ApiResponse response = new ApiResponse();
+        response.setResult(posts);
+        return response;
+    }
+
+    @GetMapping("/{postId}/comments")
+    public ApiResponse<List<CommentResponse>> getCommentsByPost(
+            @PathVariable Long postId
+           ) {
+        List<CommentResponse> comments = postService.getCommentsByPost(postId);
+
+        ApiResponse<List<CommentResponse>> response = new ApiResponse<>();
+        response.setResult(comments);
         return response;
     }
 }

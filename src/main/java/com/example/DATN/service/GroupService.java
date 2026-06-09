@@ -1,6 +1,7 @@
 package com.example.DATN.service;
 
 import com.example.DATN.dto.group.*;
+import com.example.DATN.dto.post.PostCreateRequest;
 import com.example.DATN.dto.post.PostResponse;
 import com.example.DATN.entity.*;
 import com.example.DATN.entity.enums.*;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -169,9 +171,12 @@ public class GroupService {
             throw new AppException(ErrorCode.JOIN_REQUEST_ALREADY_SENT);
         }
 
-        Friendship friendship = friendshipRepository.findFriendshipBetween(inviterId, friendId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FRIENDS));
+        List<Friendship> friendships =
+                friendshipRepository.findFriendshipBetween(inviterId, friendId);
 
+        Friendship friendship = friendships.stream()
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
         if (friendship.getStatus() != FriendshipStatus.ACCEPTED) {
             throw new AppException(ErrorCode.CAN_ONLY_INVITE_FRIENDS);
         }
@@ -405,7 +410,7 @@ public class GroupService {
 
         List<Post> posts = postRepository.findByGroupId(groupId);
         for (Post post : posts) {
-            postService.deletePost(post.getUserId(), post.getId());
+            postService.deletePost(post.getUser().getId(), post.getId());
         }
 
         groupRepository.delete(group);
@@ -511,4 +516,9 @@ public class GroupService {
                 .requestedAt(req.getRequestedAt())
                 .build();
     }
+
+    public List<GroupResponse> getAlls(){
+        return groupRepository.findAll().stream().map(this::mapToGroupResponse).toList();
+    }
+
 }

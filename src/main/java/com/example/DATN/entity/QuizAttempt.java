@@ -6,7 +6,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
-
 @Entity
 @Data
 @Builder
@@ -14,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class QuizAttempt {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -26,23 +26,20 @@ public class QuizAttempt {
     @JoinColumn(name = "quiz_id", nullable = false)
     Quiz quiz;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "group_id")
-//    Group group;
-
     Integer attemptNumber;
 
     Double score;
     Double scorePrecent;
     Double totalPoints;
+
     @Enumerated(EnumType.STRING)
     AttemptStatus status;
 
     LocalDateTime startAt;
     LocalDateTime submitAt;
 
-    @Builder.Default()
-    boolean AiReviewRequest=false;
+    @Builder.Default
+    boolean aiReviewRequest = false;
 
     String detailQuizId;
 }

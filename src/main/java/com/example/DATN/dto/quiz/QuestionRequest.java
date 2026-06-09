@@ -1,6 +1,5 @@
 package com.example.DATN.dto.quiz;
 
-import com.example.DATN.entity.document.QuestionOption;
 import com.example.DATN.entity.enums.QuestionType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,6 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class QuestionRequest {
+
+    String id;
+
     String questionText;
     QuestionType type;
     Double point;

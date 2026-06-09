@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FeedbackTeacher {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -22,13 +23,19 @@ public class FeedbackTeacher {
     User teacher;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Attempt_id")
+    @JoinColumn(name = "attempt_id")
     QuizAttempt attempt;
 
     String questionId;
 
+    @Column(columnDefinition = "TEXT")
     String content;
 
     LocalDateTime createAt;
 
+
+    @PrePersist
+    void onCreate() {
+        createAt = LocalDateTime.now();
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.DATN.entity;
 
 import com.example.DATN.entity.enums.FriendshipStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,8 +32,8 @@ public class User {
     boolean status;
     boolean active;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    private Set<Role> roles;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ActiveCode> activeCodes;
@@ -48,13 +49,16 @@ public class User {
     // friend
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private Set<Friendship> sentFriendships = new HashSet<>();
 
     @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore
     private Set<Friendship> receivedFriendships = new HashSet<>();
 
     @Transient
+    @JsonIgnore
     public Set<User> getFriends() {
         Set<User> friends = new HashSet<>();
 

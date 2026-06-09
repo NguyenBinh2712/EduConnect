@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document
@@ -27,7 +28,7 @@ public class AttemptDetail {
     @Indexed
     Long userId;
 
-    List<Answer> answers;
+    List<Answer> answers=new ArrayList<>();
     AiReview review;
 
     Instant createAt;

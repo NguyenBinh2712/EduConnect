@@ -63,6 +63,8 @@ public enum ErrorCode {
     JOIN_REQUEST_ALREADY_SENT(4013,"Đã gửi yêu cầu tham gia",HttpStatus.CONFLICT),
     JOIN_REQUEST_NOT_FOUND(4014, "Không tìm thấy yêu cầu tham gia", HttpStatus.NOT_FOUND),
     REQUEST_ALREADY_PROCESSED(4015, "Yêu cầu đã được xử lý", HttpStatus.CONFLICT),
+    GROUP_NOT_FOUND,
+
 
     NOT_IN_GROUP(4016, "Bạn không thuộc nhóm này", HttpStatus.FORBIDDEN),
     NOT_FRIENDS(4017, "Hai người không phải bạn bè", HttpStatus.BAD_REQUEST),
@@ -86,8 +88,15 @@ public enum ErrorCode {
     BLOCKED_USER,
     MESSAGE_NOT_FOUND,
 
-    NOT_FOUND_QUIZ,
-    QUIZ_CONTENT_NOT_FOUND,
+    NOT_FOUND_QUIZ(1050, "Quiz content không tìm thấy", HttpStatus.NOT_FOUND),
+    QUIZ_CONTENT_NOT_FOUND(1050, "Quiz content không tìm thấy", HttpStatus.NOT_FOUND),
+    QUIZ_NOT_ACTIVE(1051, "Quiz chưa được kích hoạt", HttpStatus.BAD_REQUEST),
+    QUIZ_EXPIRED(1052, "Quiz đã hết hạn làm bài", HttpStatus.BAD_REQUEST),
+    QUIZ_NOT_STARTED(1053, "Quiz chưa đến thời gian mở", HttpStatus.BAD_REQUEST),
+    ATTEMPT_IN_PROGRESS(1054, "Bạn đang có bài làm dở, vui lòng nộp trước", HttpStatus.BAD_REQUEST),
+    MAX_ATTEMPT_REACHED(1055, "Bạn đã hết lượt làm bài", HttpStatus.BAD_REQUEST),
+    AI_REVIEW_LOCKED(1056, "Đã dùng AI review, không thể làm lại", HttpStatus.BAD_REQUEST),
+
 
     ;
     private int code;

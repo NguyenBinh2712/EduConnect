@@ -14,6 +14,6 @@ public class AiReviewResponse {
     String overallAnalysis;
     List<String> weaknessAreas;
     String studyRoadmap;
-    List<QuestionResponse> perQuestion;
+    List<QuestionAnalysisResponse> perQuestion;
     Instant generatedAt;
 }

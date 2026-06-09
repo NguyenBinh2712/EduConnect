@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AnswerRequest {
-    Integer questionIndex;
+    String questionId;
     List<Integer> selectedOptionIndexes; // trắc nghiệm
     String textAnswer;
 }

@@ -52,7 +52,8 @@ public class UserController {
     public ApiResponse updateMyProfile(
             @RequestBody @Valid ProfileRequest request,
             @AuthenticationPrincipal Jwt jwt) {
-        userService.createOrUpdateProfile(request);
+        Long userId=((Number)jwt.getClaim("userId")).longValue();
+        userService.createOrUpdateProfile(userId,request);
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setMessage("update profile success");
         return apiResponse;
@@ -115,9 +116,10 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse getAllUsers() {
+    public ApiResponse getAllUsers(@RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "20") int size) {
         ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setResult(userService.getAllUser());
+        apiResponse.setResult(userService.getAllUser(page,size));
         return apiResponse;
     }
 

@@ -19,5 +19,29 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Slice<Post> findByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
     Slice<Post> findByGroupIdAndIsHiddenFalse(Long groupId, Pageable pageable);
+
     List<Post> findByGroupId(Long groupId);
+    Slice<Post> findByContentContainingIgnoreCaseAndIsHiddenFalse(
+            String keyword,
+            Pageable pageable
+    );
+    Slice<Post> findByIsHiddenFalseAndPrivacyAndGroupIsNull(
+            Privacy privacy,
+            Pageable pageable
+    );
+
+    // Feed của một user cụ thể
+    Slice<Post> findByUserIdAndIsHiddenFalseAndGroupIsNullOrderByCreatedAtDesc(
+            Long userId, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE " +
+            "LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "AND p.isHidden = false " +
+            "AND p.group IS NULL " +           // chỉ post ngoài group
+            "AND p.privacy = 'PUBLIC'")        // chỉ post công khai
+    Slice<Post> searchPublicPosts(@Param("keyword") String keyword, Pageable pageable);
+
+
+    Slice<Post> findByUserIdAndIsHiddenFalseAndPrivacyAndGroupIsNull(
+            Long userId, Privacy privacy, Pageable pageable);
 }

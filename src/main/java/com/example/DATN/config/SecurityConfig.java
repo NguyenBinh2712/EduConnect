@@ -14,9 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity
@@ -26,27 +28,44 @@ public class SecurityConfig {
     private CustomJwtDecoder customJwtDecoder;
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/user/register", "/user/register/verify", "/user/register/resend-otp",
-            "/auth/login", "/auth/logout", "/auth/refresh",  "/auth/introspect",
-            "/permission","/role",
-            "/ws-chat/**",
+            "/user/register/**",
+            "/auth/**",
+            "/permission/**",
+            "/role/**",
+            "/forgot-password/request-otp",
+            "/forgot-password",
+            "/doan/auth/**",
+            "/doan/ws-chat/**",
+            "/doan/test/public/**",
+
+            "/ws-chat/**"
     };
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity){
-        httpSecurity.authorizeHttpRequests(request->
-                request.requestMatchers(HttpMethod.POST,PUBLIC_ENDPOINTS)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-        );
-        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                        .decoder(customJwtDecoder)
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
-        httpSecurity.sessionManagement(session->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+
+        httpSecurity
+                .cors(cors -> {})
+                .csrf(AbstractHttpConfigurer::disable)
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .authorizeHttpRequests(request ->
+                        request
+
+                                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                                .anyRequest().authenticated()
+                )
+
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwtConfigurer -> jwtConfigurer
+                                .decoder(customJwtDecoder)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 
         return httpSecurity.build();
     }
@@ -56,7 +75,8 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
         corsConfiguration.addAllowedOrigin("http://localhost:3000");  //react
-        corsConfiguration.addAllowedOrigin("http://localhost:5173"); // Vite
+        corsConfiguration.addAllowedOrigin("http://localhost:5173");
+        corsConfiguration.addAllowedOrigin("http://localhost:3001");
 
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
@@ -82,5 +102,15 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(10);
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

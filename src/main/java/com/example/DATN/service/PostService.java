@@ -35,16 +35,30 @@ public class PostService {
     UserRepository userRepository;
     ReportRepository reportRepository;
     MailService mailService;
+    GroupRepository groupRepository;
+    GroupMembershipRepository groupMembershipRepository;
 
     NotificationService notificationService;
 
+    private User findUserById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
     public PostResponse createPost(
             Long userId,
             PostCreateRequest request,
             List<MultipartFile> files){
 
         Post post = new Post();
-        post.setUserId(userId);
+        post.setUser(findUserById(userId));
+        if (request.getGroupId() != null) {
+            Group group = groupRepository.findById(request.getGroupId())
+                    .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_EXISTED));
+            boolean isMember = groupMembershipRepository
+                    .existsByGroupIdAndUserId(request.getGroupId(), userId);
+            if (!isMember) throw new AppException(ErrorCode.NOT_IN_GROUP);
+            post.setGroup(group);
+        }
         post.setContent(request.getContent());
         post.setPrivacy(request.getPrivacy());
         post.setOriginalPostId(request.getOriginalPostId());
@@ -71,7 +85,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXISTED));
 
-        if(!post.getUserId().equals(userId))
+        if(!post.getUser().getId().equals(userId))
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         post.setContent(request.getContent());
@@ -105,7 +119,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXISTED));
 
-        if (!post.getUserId().equals(userId)) {
+        if (!post.getUser().getId().equals(userId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -133,7 +147,7 @@ public class PostService {
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXISTED));
 
         Post sharePost = new Post();
-        sharePost.setUserId(userId);
+        sharePost.setUser(findUserById(userId));
         sharePost.setOriginalPostId(originalPostId);
         sharePost.setContent("");
         sharePost.setPrivacy(Privacy.PUBLIC);
@@ -141,7 +155,7 @@ public class PostService {
         postRepository.save(sharePost);
 
         notificationService.sendNotify(
-                original.getUserId(),
+                original.getUser().getId(),
                 userId,
                 NotificationType.SHARE_POST,
                 originalPostId.toString(),
@@ -152,15 +166,10 @@ public class PostService {
  
     public Slice<PostResponse> getFeed(int page, int size) {
 
-        Pageable pageable =
-                PageRequest.of(page,size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page,size, Sort.by("createdAt").descending());
 
-        Slice<Post> posts =
-                postRepository.findByIsHiddenFalseAndPrivacy(
-                        Privacy.PUBLIC,
-                        pageable
-                );
-
+        Slice<Post> posts = postRepository
+                .findByIsHiddenFalseAndPrivacyAndGroupIsNull(Privacy.PUBLIC, pageable);
         return posts.map(this::mapToResponse);
     }
 
@@ -219,7 +228,7 @@ public class PostService {
 
         return PostResponse.builder()
                 .id(post.getId())
-                .userId(post.getUserId())
+                .user(toUserPost(post.getUser()))
                 .content(post.getContent())
                 .privacy(post.getPrivacy())
                 .postType(post.getPostType())
@@ -232,6 +241,13 @@ public class PostService {
                 .build();
     }
 
+    private UserPost toUserPost(User user){
+        return UserPost.builder()
+                .id(user.getId())
+                .fullName(user.getProfile().getFullName())
+                .urlAvatar(user.getProfile().getAvatarUrl())
+                .build();
+    }
 // comment
 
     public CommentResponse createComment(
@@ -262,7 +278,7 @@ public class PostService {
 
         if (parent == null) {
             notificationService.sendNotify(
-                    post.getUserId(),
+                    post.getUser().getId(),
                     userId,
                     NotificationType.COMMENT_POST,
                     postId.toString(),
@@ -334,7 +350,7 @@ public class PostService {
         }
         if(existing.isEmpty()){
             notificationService.sendNotify(
-                    post.getUserId(),
+                    post.getUser().getId(),
                     userId,
                     NotificationType.LIKE_POST,
                     postId.toString(),
@@ -357,7 +373,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXISTED));
 
-        if (post.getUserId().equals(reporterId)) {
+        if (post.getUser().getId().equals(reporterId)) {
             throw new AppException(ErrorCode.CANNOT_REPORT_OWN_CONTENT);
         }
 
@@ -398,10 +414,10 @@ public class PostService {
         reportRepository.save(report);
 
         Post post = report.getPost();
-        User user=userRepository.findById(post.getUserId())
+        User user=userRepository.findById(post.getUser().getId())
                 .orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
         if (newStatus == ReportStatus.APPROVED) {
-            deletePost(post.getUserId(), post.getId());
+            deletePost(post.getUser().getId(), post.getId());
             mailService.sendEmail(
                     user.getEmail(),
                     "Cảnh cáo vi phạm",
@@ -435,5 +451,67 @@ public class PostService {
                 .stream()
                 .map(this::mapToReportResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Slice<PostResponse> searchPosts(String keyword, int page, int size) {
+        return postRepository
+                .searchPublicPosts(keyword, PageRequest.of(page, size,
+                        Sort.by("createdAt").descending()))
+                .map(this::mapToResponse);
+    }
+
+    public void deleteComment(Long userId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(ErrorCode.NO_PERMISSION));
+
+        // Chỉ chủ comment hoặc chủ bài viết mới được xóa
+        Post post = comment.getPost();
+        boolean isOwner = comment.getUserId().equals(userId);
+        boolean isPostOwner = post.getUser().getId().equals(userId);
+
+        if (!isOwner && !isPostOwner) {
+            throw new AppException(ErrorCode.NO_PERMISSION);
+        }
+
+        commentRepository.delete(comment);
+    }
+    public Slice<PostResponse> getUserPosts(Long targetUserId, Long viewerId,
+                                            int page, int size) {
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("createdAt").descending());
+
+        // Xem profile của chính mình — thấy hết
+        if (targetUserId.equals(viewerId)) {
+            return postRepository
+                    .findByUserIdAndIsHiddenFalseAndGroupIsNullOrderByCreatedAtDesc(
+                            targetUserId, pageable)
+                    .map(this::mapToResponse);
+        }
+        // Xem người khác — chỉ thấy PUBLIC
+        return postRepository
+                .findByUserIdAndIsHiddenFalseAndPrivacyAndGroupIsNull(
+                        targetUserId, Privacy.PUBLIC, pageable)
+                .map(this::mapToResponse);
+    }
+    public Slice<AdminPostItemResponse> getAdminPosts(int page, int size) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        return postRepository.findAll(pageable)
+                .map(this::toAdminPostItemResponse);
+    }
+    private AdminPostItemResponse toAdminPostItemResponse(Post post) {
+
+        return AdminPostItemResponse.builder()
+                .id(post.getId())
+                .user(toUserPost(post.getUser()))
+                .content(post.getContent())
+                .privacy(post.getPrivacy())
+                .createdAt(post.getCreatedAt())
+                .build();
     }
 }

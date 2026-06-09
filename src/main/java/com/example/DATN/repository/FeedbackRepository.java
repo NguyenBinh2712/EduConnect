@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface FeedbackRepository extends JpaRepository<FeedbackTeacher,Long> {
-    List<FeedbackTeacher> findByAttemptIdOrderByCreatedAtAsc(Long attemptId);
+    List<FeedbackTeacher> findByAttemptIdOrderByCreateAtAsc(Long attemptId);
 }

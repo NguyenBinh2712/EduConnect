@@ -58,8 +58,6 @@ cloudinary:
   api_key: 489282433767684
   api_secret: yrBWIY_98-iFnDjFe86PeDGBABw
 
-openai:
-  api:
-    key:   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
-    url: https://api.openai.com/v1/chat/completions
-  model: gpt-4o-mini
+gemini:
+  api-key: AQ.Ab8RN6I5uxIfzXZNWqEnsjb3gp4u9_785WNFA6SlHwGM6l_IsQ
+  model: gemini-2.5-flash

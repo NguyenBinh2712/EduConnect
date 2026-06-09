@@ -5,7 +5,7 @@ import com.example.DATN.entity.enums.AttemptStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt,Long> {
     @Query("""
         SELECT a FROM QuizAttempt a
         WHERE a.status = 'IN_PROGRESS'
-        AND a.startedAt < :deadline
+        AND a.startAt < :deadline
         """)
     List<QuizAttempt> findExpiredAttempts(@Param("deadline") java.time.LocalDateTime deadline);
 

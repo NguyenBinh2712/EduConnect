@@ -17,6 +17,10 @@ import com.example.DATN.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -162,9 +166,10 @@ public class ConversationService {
 
         Conversation conv = conversationRepository.findById(convId)
                 .orElseThrow(()->new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
-        if(!conv.isGroup())
+        if (!conv.isGroup()) {
+            throw new AppException(ErrorCode.NO_PERMISSION);
+        }
         assertOwner(conv, userId);
-
         List<Participant> participants = memberIds.stream()
                 .map(id -> participantRepository
                         .findByConversationIdAndUserId(convId, id)
@@ -229,7 +234,7 @@ public class ConversationService {
                 .findByConversationIdAndUserId(conv.getId(), userId)
                 .orElseThrow(()->new AppException(ErrorCode.NOT_CONVERSATION_MEMBER));
 
-        if (p.getMembershipRole() != MembershipRole.OWNER.OWNER) {
+        if (p.getMembershipRole() != MembershipRole.OWNER) {
             throw new AppException(ErrorCode.NO_PERMISSION);
         }
     }
@@ -306,6 +311,13 @@ public class ConversationService {
                 .createdAt(Instant.now())
                 .build();
         reportChatRepository.save(report);
+    }
+
+    public Slice<ConversationResponse> getMyConversations(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return conversationRepository
+                .findAllConversationByUserId(userId, pageable)
+                .map(conv -> toConversationResponse(conv, userId));
     }
 
 //    public List<Report> getReportConversation(){
