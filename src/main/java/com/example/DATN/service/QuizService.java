@@ -41,7 +41,6 @@ public class QuizService {
     GroupMembershipRepository groupMembershipRepository;
 
     //  CREATE
-
     public QuizResponse createQuiz(QuizCreateRequest request, Long teacherId) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -499,7 +498,6 @@ public class QuizService {
     }
 
     //  PRIVATE HELPERS
-
     private void validateQuizAvailable(Quiz quiz) {
         if (quiz.getStatus() != QuizStatus.ACTIVE) {
             throw new AppException(ErrorCode.QUIZ_NOT_ACTIVE);
@@ -542,7 +540,6 @@ public class QuizService {
     }
 
     //  BUILD HELPERS
-
     private ContentQuiz buildContentQuiz(Long quizId, QuizCreateRequest request) {
         return ContentQuiz.builder()
                 .quizId(quizId)

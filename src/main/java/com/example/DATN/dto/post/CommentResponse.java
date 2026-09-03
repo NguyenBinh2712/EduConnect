@@ -15,6 +15,7 @@ public class CommentResponse {
     Long id;
 
     Long userId;
+    String fullName;
 
     String content;
 

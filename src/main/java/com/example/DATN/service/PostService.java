@@ -310,11 +310,13 @@ public class PostService {
     }
 
     private CommentResponse mapToCommentResponse(Comment comment){
-
+        User user=userRepository.findById(comment.getUserId())
+                .orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
         return CommentResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
                 .userId(comment.getUserId())
+                .fullName(user.getProfile().getFullName())
                 .parentId(
                         comment.getParent() != null ?
                                 comment.getParent().getId() : null
@@ -324,7 +326,6 @@ public class PostService {
     }
 
     // reaction
-
     public PostResponse reactToPost(Long postId, Long userId, ReactionRequest request){
         Post post=postRepository.findById(postId)
                 .orElseThrow(()->new AppException(ErrorCode.POST_NOT_EXISTED));

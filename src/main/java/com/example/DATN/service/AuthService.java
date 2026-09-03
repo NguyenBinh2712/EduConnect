@@ -74,7 +74,7 @@ public class AuthService {
 
         JWTClaimsSet claimsSet=new JWTClaimsSet.Builder()
                 .subject(user.getEmail())
-                .issuer(user.getEmail())
+                .issuer("DATN")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.MINUTES).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
@@ -90,7 +90,6 @@ public class AuthService {
         } catch (KeyLengthException e) {
             throw new RuntimeException(e);
         } catch (JOSEException e) {
-
             throw new RuntimeException(e);
         }
     }
